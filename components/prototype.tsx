@@ -6,6 +6,7 @@ import {
   facilityVerificationQuestionnaireSchema,
   facilityVerificationRecordSchema,
   type FacilityVerificationRecord,
+  type AiFacilityProposal,
 } from "../lib/schemas";
 import { consentMatches, deriveWorkflowState } from "../lib/workflow";
 
@@ -25,6 +26,8 @@ export function Prototype() {
   )!;
   const [record, setRecord] = useState<FacilityVerificationRecord | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [aiProposal, setAiProposal] = useState<AiFacilityProposal | null>(null);
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [nextStepPresent, setNextStepPresent] = useState(true);
   const [consentStatus, setConsentStatus] = useState<"NOT_GIVEN" | "GIVEN" | "REFUSED" | "REVOKED">("NOT_GIVEN");
   const [supportPermission, setSupportPermission] = useState(false);
@@ -102,6 +105,23 @@ export function Prototype() {
     setFormError(null);
   }
 
+  async function requestAiProposal(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setAiProposal(null); setAiMessage("Requesting bounded proposal…");
+    const notes = String(new FormData(event.currentTarget).get("notes") ?? "");
+    try {
+      const response = await fetch("/api/facility-extraction", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notes }) });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error);
+      setAiProposal(body.proposal); setAiMessage("Proposal ready. It is non-authoritative until human review and approval.");
+    } catch (error) { setAiMessage(error instanceof Error ? error.message : "AI unavailable. Continue manually."); }
+  }
+
+  function reviewAiProposal() {
+    if (!aiProposal?.procedureOffered) { setAiMessage("Procedure was not supported by the notes. Continue manually."); return; }
+    setRecord(facilityVerificationRecordSchema.parse({ ...aiProposal, recordId: `ai-${Date.now()}`, facilityId: selectedFacility.id, facilityName: selectedFacility.name, sourceContact: "AI proposal from simulated facility-call notes — human verification required", verificationTimestamp: new Date().toISOString(), approvalStatus: "PENDING_REVIEW", approvedBy: null, approvedAt: null }));
+    setAiMessage("Proposal copied to pending human review. It is still not approved or patient-facing.");
+  }
+
   return (
     <main>
       <header className="hero">
@@ -154,6 +174,11 @@ export function Prototype() {
               Facility Verification Questionnaire — completed manually from a simulated facility call and
               stored as a Facility Verification Record.
             </p>
+            <aside className="ai-box"><p className="kicker">Optional experimental AI assistance</p><p>Simulated facility-call notes only. Never enter patient names, identifiers, phone numbers, results, referrals, clinical notes, or documents. AI only proposes fields; manual entry remains available.</p>
+              <form onSubmit={requestAiProposal}><textarea name="notes" required minLength={20} maxLength={3000} defaultValue="Simulated facility reports colposcopy is offered. General appointments may be available next week. Referral required. Stated charge is 1450 MXN; laboratory work is excluded." /><button type="submit">Propose structured fields with AI</button></form>
+              {aiMessage && <p role="status">{aiMessage}</p>}
+              {aiProposal && <div><pre>{JSON.stringify(aiProposal, null, 2)}</pre><button type="button" onClick={reviewAiProposal}>Send proposal to human record review</button><button className="secondary" type="button" onClick={() => { setAiProposal(null); setAiMessage("Proposal ignored. Manual entry is unchanged."); }}>Ignore proposal</button></div>}
+            </aside>
             <form className="questionnaire" onSubmit={handleQuestionnaire}>
               <label>
                 Procedure/service offered

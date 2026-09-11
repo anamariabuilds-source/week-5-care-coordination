@@ -58,6 +58,22 @@ export const confirmationEvidenceSchema = z.object({
   confirmationSource: z.string().trim().min(2).max(160),
 });
 
+export const facilityNotesRequestSchema = z.object({
+  notes: z.string().trim().min(20).max(3000),
+});
+
+export const aiFacilityProposalSchema = z.object({
+  procedureOffered: procedureSchema.nullable(),
+  serviceStatus: informationStatusSchema,
+  reportedGeneralAvailability: z.string().trim().max(500).nullable(),
+  statedMedicalChargeMxn: z.number().nonnegative().max(1_000_000).nullable(),
+  statedChargeExclusions: z.string().trim().max(500).nullable(),
+  prerequisites: z.string().trim().max(500).nullable(),
+  acceptanceReferralRules: z.string().trim().max(500).nullable(),
+  freshnessStatus: freshnessStatusSchema,
+});
+export type AiFacilityProposal = z.infer<typeof aiFacilityProposalSchema>;
+
 export type Procedure = z.infer<typeof procedureSchema>;
 export type FacilityVerificationQuestionnaire = z.infer<
   typeof facilityVerificationQuestionnaireSchema
@@ -66,4 +82,3 @@ export type FacilityVerificationRecord = z.infer<typeof facilityVerificationReco
 export type SchedulingConsent = z.infer<typeof schedulingConsentSchema>;
 export type SupportPersonPermission = z.infer<typeof supportPersonPermissionSchema>;
 export type ConfirmationEvidence = z.infer<typeof confirmationEvidenceSchema>;
-

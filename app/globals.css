@@ -282,6 +282,10 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   border: 1px solid var(--line);
   border-radius: 0.5rem;
 }
+.ai-box { margin: 1.25rem 0; padding: 1rem; background: #eef3f8; border: 1px solid #b9c9d8; border-radius: .5rem; }
+.ai-box form { display: grid; gap: .6rem; }
+.ai-box pre { overflow: auto; padding: .8rem; background: white; border-radius: .4rem; white-space: pre-wrap; }
+.ai-box button + button { margin-left: .6rem; }
 
 .review-box h4,
 .stale-example h4 {

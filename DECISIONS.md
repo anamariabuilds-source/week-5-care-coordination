@@ -28,3 +28,12 @@ Tomorrow's first move: implement and test deterministic workflow guards for prov
 - Represent facility denial and unsupported clinical-document transfer as explicit non-confirmed states.
 
 Tomorrow's first move: prepare the first deterministic deployment, then add the bounded server-side Gemini proposal route without changing workflow authority.
+
+## Commit 4 — Bounded AI integration
+
+- Use a server-only Gemini REST request with `GEMINI_API_KEY`; never expose the key through a public environment variable.
+- Accept one request property containing simulated facility-call notes and reject obvious patient/clinical-document content before any model call.
+- Validate model JSON with Zod and keep proposals non-authoritative until two explicit steps: copy to review, then human approval.
+- Preserve the complete manual questionnaire when the key, service, JSON, or validation fails.
+
+Tomorrow's first move: configure the server-only Gemini key in Vercel, verify the integrated deployment, then add boundary-focused automated tests.
