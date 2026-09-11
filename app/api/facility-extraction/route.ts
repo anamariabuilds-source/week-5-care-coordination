@@ -27,20 +27,12 @@ export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "AI assistance is unavailable. Continue with manual entry." }, { status: 503 });
 
-  const prompt = `Extract only facts explicitly supported by these SIMULATED FACILITY-LEVEL CALL NOTES. Do not infer patient facts, eligibility, urgency, diagnosis, or missing information. Use null or NOT_CONFIRMED when absent. Notes:\n${parsedRequest.data.notes}`;
+  const prompt = `Extract only facts explicitly supported by these SIMULATED FACILITY-LEVEL CALL NOTES. Do not infer patient facts, eligibility, urgency, diagnosis, or missing information. Return ONLY valid JSON with exactly these keys: procedureOffered ("COLPOSCOPY" or null), serviceStatus ("REPORTED" or "NOT_CONFIRMED"), reportedGeneralAvailability (string or null), statedMedicalChargeMxn (number or null), statedChargeExclusions (string or null), prerequisites (string or null), acceptanceReferralRules (string or null), freshnessStatus ("CURRENTLY_REPORTED", "NOT_RECENTLY_VERIFIED", or "NOT_CONFIRMED"). Use null or NOT_CONFIRMED when absent. Do not include markdown or commentary. Notes:\n${parsedRequest.data.notes}`;
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseFormat: { text: { mimeType: "application/json", schema: {
-          type: "object", properties: {
-            procedureOffered: { type: ["string", "null"], enum: ["COLPOSCOPY", null] }, serviceStatus: { type: "string", enum: ["REPORTED", "NOT_CONFIRMED"] },
-            reportedGeneralAvailability: { type: ["string", "null"] }, statedMedicalChargeMxn: { type: ["number", "null"] }, statedChargeExclusions: { type: ["string", "null"] }, prerequisites: { type: ["string", "null"] }, acceptanceReferralRules: { type: ["string", "null"] }, freshnessStatus: { type: "string", enum: ["CURRENTLY_REPORTED", "NOT_RECENTLY_VERIFIED", "NOT_CONFIRMED"] },
-          }, required: ["procedureOffered", "serviceStatus", "reportedGeneralAvailability", "statedMedicalChargeMxn", "statedChargeExclusions", "prerequisites", "acceptanceReferralRules", "freshnessStatus"], additionalProperties: false
-        } } } }
-      }),
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
     });
     const responseText = await response.text();
     let payload: unknown;
@@ -72,7 +64,8 @@ export async function POST(request: Request) {
     };
     const candidateText = geminiPayload.candidates?.[0]?.content?.parts?.[0]?.text;
     const text = typeof candidateText === "string" ? candidateText : "";
-    const proposal = aiFacilityProposalSchema.safeParse(JSON.parse(text));
+    const jsonText = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const proposal = aiFacilityProposalSchema.safeParse(JSON.parse(jsonText));
     if (!proposal.success) throw new Error("Invalid Gemini output");
     return NextResponse.json({ proposal: proposal.data });
   } catch (error) {

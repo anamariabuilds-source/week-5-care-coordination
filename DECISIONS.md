@@ -63,3 +63,5 @@ Tomorrow's first move: capture the sanitized Gemini production error, fix only i
 Tomorrow's first move: verify the `gemini-3.6-flash` production response, then remove the temporary diagnostic logger after success.
 
 - The model became reachable but the legacy structured-output configuration still failed safely; use Gemini 3.6's documented `responseFormat.text` envelope while retaining the GenerateContent endpoint.
+
+- Production rejected the documented MIME-value dialect. Remove native response formatting and accept text only after defensive fence stripping, JSON parsing, and the existing Zod validation; this avoids further API-dialect churn without weakening authority boundaries.
