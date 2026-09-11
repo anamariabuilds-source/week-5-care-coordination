@@ -76,3 +76,10 @@ Tomorrow's first move: run the planned high-value browser verification for Deplo
 - Keep this session documentation-only; do not change application behavior or begin Persona Test evidence.
 
 Tomorrow's first move: begin the Persona Test only after explicit approval, using a fresh chat and the verified Deploy 2 screens in order.
+
+## Persona Test consent clarification
+
+- Make support-person authorization visibly **Not authorized (off by default)** until the patient separately selects it.
+- Giving scheduling consent preserves the independent support-person value; refusal or revocation clears it to prevent residual access.
+
+Tomorrow's first move: verify the revised production checkbox is unchecked and labeled Not authorized before any patient action.

@@ -9,6 +9,10 @@ import {
   type AiFacilityProposal,
 } from "../lib/schemas";
 import { consentMatches, deriveWorkflowState } from "../lib/workflow";
+import {
+  initialSupportPersonPermission,
+  updateSupportPersonPermission,
+} from "../lib/support-permission";
 
 const emptyValue = "Not confirmed";
 
@@ -30,7 +34,9 @@ export function Prototype() {
   const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [nextStepPresent, setNextStepPresent] = useState(true);
   const [consentStatus, setConsentStatus] = useState<"NOT_GIVEN" | "GIVEN" | "REFUSED" | "REVOKED">("NOT_GIVEN");
-  const [supportPermission, setSupportPermission] = useState(false);
+  const [supportPermission, setSupportPermission] = useState(
+    initialSupportPersonPermission,
+  );
   const [requested, setRequested] = useState(false);
   const [facilityResponse, setFacilityResponse] = useState<"NONE" | "DENIED" | "UNSUPPORTED_DOCUMENT">("NONE");
   const [confirmation, setConfirmation] = useState<{ reservedDate: string; reservedTime: string; confirmationSource: string } | null>(null);
@@ -292,10 +298,10 @@ export function Prototype() {
             {!closed && <div className="workflow-controls">
               <fieldset><legend>Patient scheduling choice</legend>
                 <p>Minimum disclosure: simulated patient label, contact preference, and provider-documented procedure to {selectedFacility.name}.</p>
-                <button type="button" onClick={() => setConsentStatus("GIVEN")}>Give facility/procedure-specific consent</button>
-                <button className="secondary" type="button" onClick={() => setConsentStatus("REFUSED")}>Refuse and stop contact</button>
+                <button type="button" onClick={() => { setConsentStatus("GIVEN"); setSupportPermission((current) => updateSupportPersonPermission(current, { type: "SCHEDULING_CONSENT_GIVEN" })); }}>Give facility/procedure-specific consent</button>
+                <button className="secondary" type="button" onClick={() => { setConsentStatus("REFUSED"); setSupportPermission((current) => updateSupportPersonPermission(current, { type: "SCHEDULING_CONSENT_REFUSED_OR_REVOKED" })); }}>Refuse and stop contact</button>
               </fieldset>
-              <label className="demo-toggle"><input type="checkbox" checked={supportPermission} onChange={(event) => setSupportPermission(event.target.checked)} /> Separately authorize simulated support person (off by default)</label>
+              <label className="demo-toggle"><input type="checkbox" checked={supportPermission} onChange={(event) => setSupportPermission((current) => updateSupportPersonPermission(current, { type: "PATIENT_EXPLICITLY_SET", authorized: event.target.checked }))} /> Separately authorize simulated support person — {supportPermission ? "Authorized by patient" : "Not authorized (off by default)"}</label>
               <button type="button" disabled={!consentMatches(workflowInput) || workflowState !== "FACILITY_REPORTED"} onClick={() => setRequested(true)}>Human navigator: request appointment</button>
               {requested && <fieldset><legend>Simulated facility response</legend>
                 <button type="button" onClick={() => { setFacilityResponse("DENIED"); setConfirmation(null); }}>Denied / unavailable</button>
@@ -308,7 +314,7 @@ export function Prototype() {
                 </form>
                 {confirmation && <button className="secondary" type="button" onClick={() => setConfirmation(null)}>Remove confirmation evidence (test invalidation)</button>}
               </fieldset>}
-              {consentStatus === "GIVEN" && <button className="danger" type="button" onClick={() => setConsentStatus("REVOKED")}>Revoke consent and stop all contact</button>}
+              {consentStatus === "GIVEN" && <button className="danger" type="button" onClick={() => { setConsentStatus("REVOKED"); setSupportPermission((current) => updateSupportPersonPermission(current, { type: "SCHEDULING_CONSENT_REFUSED_OR_REVOKED" })); }}>Revoke consent and stop all contact</button>}
             </div>}
             {closed && <div className="closed-state"><strong>Honored patient choice — case closed immediately.</strong><p>Navigator contact, reminders, support-person contact, and alternate-channel contact are stopped. This is not navigator failure.</p></div>}
             {workflowState === "BOOKING_BLOCKED_UNSUPPORTED_DOCUMENT_CHANNEL" && <p className="error">Booking blocked: clinical document required through an unsupported channel. In a real workflow, the patient/provider would use the official facility/provider channel. This prototype does not upload or handle clinical documents.</p>}
