@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { aiFacilityProposalSchema, facilityNotesRequestSchema } from "../../../lib/schemas";
 
-const prohibitedPatientContent = /\b(patient|paciente|case\s*id|referral\s*(text|document)|screening\s*result|pathology|clinical\s*note|medical\s*record|phone\s*(number)?|tel[eé]fono)\b|\b\d{3}[-. ]?\d{3}[-. ]?\d{4}\b/i;
+export const prohibitedPatientContent = /\b(patient|paciente|case\s*id|referral\s*(text|document)|screening\s*result|pathology|clinical\s*note|medical\s*record|phone\s*(number)?|tel[eé]fono)\b|\b\d{3}[-. ]?\d{3}[-. ]?\d{4}\b/i;
 
 export async function POST(request: Request) {
   const parsedRequest = facilityNotesRequestSchema.safeParse(await request.json().catch(() => null));
@@ -20,8 +20,8 @@ export async function POST(request: Request) {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { responseMimeType: "application/json", responseSchema: {
           type: "OBJECT", properties: {
-            procedureOffered: { type: ["STRING", "NULL"], enum: ["COLPOSCOPY"] }, serviceStatus: { type: "STRING", enum: ["REPORTED", "NOT_CONFIRMED"] },
-            reportedGeneralAvailability: { type: ["STRING", "NULL"] }, statedMedicalChargeMxn: { type: ["NUMBER", "NULL"] }, statedChargeExclusions: { type: ["STRING", "NULL"] }, prerequisites: { type: ["STRING", "NULL"] }, acceptanceReferralRules: { type: ["STRING", "NULL"] }, freshnessStatus: { type: "STRING", enum: ["CURRENTLY_REPORTED", "NOT_RECENTLY_VERIFIED", "NOT_CONFIRMED"] },
+            procedureOffered: { type: "STRING", enum: ["COLPOSCOPY"], nullable: true }, serviceStatus: { type: "STRING", enum: ["REPORTED", "NOT_CONFIRMED"] },
+            reportedGeneralAvailability: { type: "STRING", nullable: true }, statedMedicalChargeMxn: { type: "NUMBER", nullable: true }, statedChargeExclusions: { type: "STRING", nullable: true }, prerequisites: { type: "STRING", nullable: true }, acceptanceReferralRules: { type: "STRING", nullable: true }, freshnessStatus: { type: "STRING", enum: ["CURRENTLY_REPORTED", "NOT_RECENTLY_VERIFIED", "NOT_CONFIRMED"] },
           }, required: ["procedureOffered", "serviceStatus", "reportedGeneralAvailability", "statedMedicalChargeMxn", "statedChargeExclusions", "prerequisites", "acceptanceReferralRules", "freshnessStatus"]
         } }
       }),

@@ -306,6 +306,7 @@ export function Prototype() {
                   <input name="confirmationSource" required maxLength={160} placeholder="Simulated facility confirmation source" aria-label="Confirmation source" />
                   <button type="submit">Record confirmation evidence</button>
                 </form>
+                {confirmation && <button className="secondary" type="button" onClick={() => setConfirmation(null)}>Remove confirmation evidence (test invalidation)</button>}
               </fieldset>}
               {consentStatus === "GIVEN" && <button className="danger" type="button" onClick={() => setConsentStatus("REVOKED")}>Revoke consent and stop all contact</button>}
             </div>}

@@ -37,3 +37,12 @@ Tomorrow's first move: prepare the first deterministic deployment, then add the 
 - Preserve the complete manual questionnaire when the key, service, JSON, or validation fails.
 
 Tomorrow's first move: configure the server-only Gemini key in Vercel, verify the integrated deployment, then add boundary-focused automated tests.
+
+## Commit 5 — Tests and hardening
+
+- Fix the production Gemini structured-output request to use the OpenAPI nullable schema dialect required by the `generateContent` endpoint.
+- Cover load-bearing workflow, schema, confirmation invalidation, and AI-input boundaries with Vitest.
+- Add an explicit demo control for removing confirmation evidence so the derived state visibly downgrades immediately.
+- Keep rendering in React text nodes; no untrusted HTML rendering API is used.
+
+Tomorrow's first move: verify the automatically deployed Commit 5 Gemini happy path and perform the planned high-value browser flows against Deploy 2.
