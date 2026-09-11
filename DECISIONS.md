@@ -69,3 +69,10 @@ Tomorrow's first move: verify the `gemini-3.6-flash` production response, then r
 - Production returned a validated proposal with HTTP 200 after switching to JSON-only text plus Zod. Remove the temporary diagnostic logger; retain only the existing safe client-facing fallback error.
 
 Tomorrow's first move: run the planned high-value browser verification for Deploy 2 without generating Persona Test evidence yet.
+
+## Mechanical Pass documentation
+
+- Record only the two production failures actually observed, their fixes, and the verified Deploy 2 results in `docs/MECHANICAL_TEST.md`.
+- Keep this session documentation-only; do not change application behavior or begin Persona Test evidence.
+
+Tomorrow's first move: begin the Persona Test only after explicit approval, using a fresh chat and the verified Deploy 2 screens in order.
