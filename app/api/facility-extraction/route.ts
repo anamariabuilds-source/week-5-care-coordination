@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { aiFacilityProposalSchema, facilityNotesRequestSchema } from "../../../lib/schemas";
 
 export const prohibitedPatientContent = /\b(patient|paciente|case\s*id|referral\s*(text|document)|screening\s*result|pathology|clinical\s*note|medical\s*record|phone\s*(number)?|tel[eé]fono)\b|\b\d{3}[-. ]?\d{3}[-. ]?\d{4}\b/i;
-const geminiModel = "gemini-2.5-flash";
+const geminiModel = "gemini-3.6-flash";
 
 function logGeminiDiagnostic(details: {
   httpStatus: number | null;

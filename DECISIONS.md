@@ -54,3 +54,10 @@ Tomorrow's first move: verify the automatically deployed Commit 5 Gemini happy p
 - Remove the temporary diagnostic after the production failure is identified and fixed.
 
 Tomorrow's first move: capture the sanitized Gemini production error, fix only its root cause, then remove the temporary diagnostic logging.
+
+### Production diagnosis result
+
+- The sanitized upstream response was HTTP 404 `NOT_FOUND`: `gemini-2.5-flash` was unavailable to new users and the API directed new users to `gemini-3.6-flash`.
+- Keep GenerateContent and change only the model identifier because the official Gemini documentation lists `gemini-3.6-flash` as stable and supporting structured outputs.
+
+Tomorrow's first move: verify the `gemini-3.6-flash` production response, then remove the temporary diagnostic logger after success.
