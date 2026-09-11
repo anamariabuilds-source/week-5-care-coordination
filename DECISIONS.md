@@ -65,3 +65,7 @@ Tomorrow's first move: verify the `gemini-3.6-flash` production response, then r
 - The model became reachable but the legacy structured-output configuration still failed safely; use Gemini 3.6's documented `responseFormat.text` envelope while retaining the GenerateContent endpoint.
 
 - Production rejected the documented MIME-value dialect. Remove native response formatting and accept text only after defensive fence stripping, JSON parsing, and the existing Zod validation; this avoids further API-dialect churn without weakening authority boundaries.
+
+- Production returned a validated proposal with HTTP 200 after switching to JSON-only text plus Zod. Remove the temporary diagnostic logger; retain only the existing safe client-facing fallback error.
+
+Tomorrow's first move: run the planned high-value browser verification for Deploy 2 without generating Persona Test evidence yet.
