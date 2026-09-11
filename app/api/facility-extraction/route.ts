@@ -34,12 +34,12 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json", responseSchema: {
-          type: "OBJECT", properties: {
-            procedureOffered: { type: "STRING", enum: ["COLPOSCOPY"], nullable: true }, serviceStatus: { type: "STRING", enum: ["REPORTED", "NOT_CONFIRMED"] },
-            reportedGeneralAvailability: { type: "STRING", nullable: true }, statedMedicalChargeMxn: { type: "NUMBER", nullable: true }, statedChargeExclusions: { type: "STRING", nullable: true }, prerequisites: { type: "STRING", nullable: true }, acceptanceReferralRules: { type: "STRING", nullable: true }, freshnessStatus: { type: "STRING", enum: ["CURRENTLY_REPORTED", "NOT_RECENTLY_VERIFIED", "NOT_CONFIRMED"] },
-          }, required: ["procedureOffered", "serviceStatus", "reportedGeneralAvailability", "statedMedicalChargeMxn", "statedChargeExclusions", "prerequisites", "acceptanceReferralRules", "freshnessStatus"]
-        } }
+        generationConfig: { responseFormat: { text: { mimeType: "application/json", schema: {
+          type: "object", properties: {
+            procedureOffered: { type: ["string", "null"], enum: ["COLPOSCOPY", null] }, serviceStatus: { type: "string", enum: ["REPORTED", "NOT_CONFIRMED"] },
+            reportedGeneralAvailability: { type: ["string", "null"] }, statedMedicalChargeMxn: { type: ["number", "null"] }, statedChargeExclusions: { type: ["string", "null"] }, prerequisites: { type: ["string", "null"] }, acceptanceReferralRules: { type: ["string", "null"] }, freshnessStatus: { type: "string", enum: ["CURRENTLY_REPORTED", "NOT_RECENTLY_VERIFIED", "NOT_CONFIRMED"] },
+          }, required: ["procedureOffered", "serviceStatus", "reportedGeneralAvailability", "statedMedicalChargeMxn", "statedChargeExclusions", "prerequisites", "acceptanceReferralRules", "freshnessStatus"], additionalProperties: false
+        } } } }
       }),
     });
     const responseText = await response.text();

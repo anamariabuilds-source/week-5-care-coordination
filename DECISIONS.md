@@ -61,3 +61,5 @@ Tomorrow's first move: capture the sanitized Gemini production error, fix only i
 - Keep GenerateContent and change only the model identifier because the official Gemini documentation lists `gemini-3.6-flash` as stable and supporting structured outputs.
 
 Tomorrow's first move: verify the `gemini-3.6-flash` production response, then remove the temporary diagnostic logger after success.
+
+- The model became reachable but the legacy structured-output configuration still failed safely; use Gemini 3.6's documented `responseFormat.text` envelope while retaining the GenerateContent endpoint.
