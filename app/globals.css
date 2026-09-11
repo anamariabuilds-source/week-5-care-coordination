@@ -244,6 +244,15 @@ button {
 button:hover {
   background: #0f554e;
 }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.secondary { color: var(--ink); background: #e7ece9; }
+.danger { background: #8d3327; }
+.demo-toggle { display: flex; gap: .6rem; align-items: center; margin-top: 1rem; font-weight: 700; }
+.demo-toggle input { width: auto; }
+.state-label, .closed-state { margin: 1rem 0; padding: 1rem; background: var(--teal-soft); border-radius: .5rem; }
+.workflow-controls { display: grid; gap: 1rem; margin: 1rem 0; }
+.workflow-controls fieldset { display: grid; gap: .7rem; border: 1px solid var(--line); border-radius: .5rem; }
+.workflow-controls form { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; }
 
 .form-actions,
 .review-box {

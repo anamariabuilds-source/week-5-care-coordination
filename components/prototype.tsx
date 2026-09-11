@@ -7,6 +7,7 @@ import {
   facilityVerificationRecordSchema,
   type FacilityVerificationRecord,
 } from "../lib/schemas";
+import { consentMatches, deriveWorkflowState } from "../lib/workflow";
 
 const emptyValue = "Not confirmed";
 
@@ -24,6 +25,30 @@ export function Prototype() {
   )!;
   const [record, setRecord] = useState<FacilityVerificationRecord | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [nextStepPresent, setNextStepPresent] = useState(true);
+  const [consentStatus, setConsentStatus] = useState<"NOT_GIVEN" | "GIVEN" | "REFUSED" | "REVOKED">("NOT_GIVEN");
+  const [supportPermission, setSupportPermission] = useState(false);
+  const [requested, setRequested] = useState(false);
+  const [facilityResponse, setFacilityResponse] = useState<"NONE" | "DENIED" | "UNSUPPORTED_DOCUMENT">("NONE");
+  const [confirmation, setConfirmation] = useState<{ reservedDate: string; reservedTime: string; confirmationSource: string } | null>(null);
+
+  const workflowInput = {
+    nextStep: nextStepPresent ? simulatedCase.providerDocumentedNextStep : null,
+    facilityId: selectedFacility.id,
+    record,
+    consent: {
+      status: consentStatus,
+      facilityId: consentStatus === "GIVEN" ? selectedFacility.id : null,
+      procedure: consentStatus === "GIVEN" ? simulatedCase.providerDocumentedNextStep : null,
+      disclosedFields: consentStatus === "GIVEN" ? ["simulated patient label", "contact preference", "documented procedure"] : [],
+      recordedAt: consentStatus === "GIVEN" ? new Date().toISOString() : null,
+    },
+    requested,
+    facilityResponse,
+    confirmation,
+  } as const;
+  const workflowState = deriveWorkflowState(workflowInput);
+  const closed = workflowState === "PATIENT_REFUSED_OR_REVOKED";
 
   function handleQuestionnaire(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -109,9 +134,10 @@ export function Prototype() {
             <h3 id="case-title">Simulated case + consent</h3>
             <div className="summary-grid">
               <div><span>Case</span><strong>{simulatedCase.displayLabel}</strong></div>
-              <div><span>Provider-documented next step</span><strong>Colposcopy</strong></div>
+              <div><span>Provider-documented next step</span><strong>{nextStepPresent ? "Colposcopy" : "Next clinical step not documented"}</strong></div>
               <div><span>Selected simulated facility</span><strong>{selectedFacility.name}</strong></div>
             </div>
+            <label className="demo-toggle"><input type="checkbox" checked={nextStepPresent} onChange={(event) => { setNextStepPresent(event.target.checked); setRequested(false); setConfirmation(null); }} /> Simulate provider-documented next step present</label>
             <p className="boundary-copy">
               The procedure is an existing provider-documented condition for this workflow. The system did
               not select it. Interactive consent controls are intentionally deferred to the core workflow milestone.
@@ -237,6 +263,30 @@ export function Prototype() {
               <span className="eyebrow">State separation</span>
             </div>
             <h3 id="booking-title">Booking status</h3>
+            <p className="state-label">Current state: <strong>{workflowState.replaceAll("_", " ")}</strong></p>
+            {!closed && <div className="workflow-controls">
+              <fieldset><legend>Patient scheduling choice</legend>
+                <p>Minimum disclosure: simulated patient label, contact preference, and provider-documented procedure to {selectedFacility.name}.</p>
+                <button type="button" onClick={() => setConsentStatus("GIVEN")}>Give facility/procedure-specific consent</button>
+                <button className="secondary" type="button" onClick={() => setConsentStatus("REFUSED")}>Refuse and stop contact</button>
+              </fieldset>
+              <label className="demo-toggle"><input type="checkbox" checked={supportPermission} onChange={(event) => setSupportPermission(event.target.checked)} /> Separately authorize simulated support person (off by default)</label>
+              <button type="button" disabled={!consentMatches(workflowInput) || workflowState !== "FACILITY_REPORTED"} onClick={() => setRequested(true)}>Human navigator: request appointment</button>
+              {requested && <fieldset><legend>Simulated facility response</legend>
+                <button type="button" onClick={() => { setFacilityResponse("DENIED"); setConfirmation(null); }}>Denied / unavailable</button>
+                <button className="secondary" type="button" onClick={() => { setFacilityResponse("UNSUPPORTED_DOCUMENT"); setConfirmation(null); }}>Clinical document required through navigator</button>
+                <form onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); setFacilityResponse("NONE"); setConfirmation({reservedDate:String(data.get("reservedDate")), reservedTime:String(data.get("reservedTime")), confirmationSource:String(data.get("confirmationSource"))}); }}>
+                  <input name="reservedDate" type="date" required aria-label="Reserved date" />
+                  <input name="reservedTime" type="time" required aria-label="Reserved time" />
+                  <input name="confirmationSource" required maxLength={160} placeholder="Simulated facility confirmation source" aria-label="Confirmation source" />
+                  <button type="submit">Record confirmation evidence</button>
+                </form>
+              </fieldset>}
+              {consentStatus === "GIVEN" && <button className="danger" type="button" onClick={() => setConsentStatus("REVOKED")}>Revoke consent and stop all contact</button>}
+            </div>}
+            {closed && <div className="closed-state"><strong>Honored patient choice — case closed immediately.</strong><p>Navigator contact, reminders, support-person contact, and alternate-channel contact are stopped. This is not navigator failure.</p></div>}
+            {workflowState === "BOOKING_BLOCKED_UNSUPPORTED_DOCUMENT_CHANNEL" && <p className="error">Booking blocked: clinical document required through an unsupported channel. In a real workflow, the patient/provider would use the official facility/provider channel. This prototype does not upload or handle clinical documents.</p>}
+            {workflowState === "FACILITY_DENIED_OR_UNAVAILABLE" && <p className="error">Facility denied the request or cannot offer a slot. The appointment remains unconfirmed; no alternate facility is invented.</p>}
             <ol className="status-row">
               <li>Facility-reported information</li>
               <li>Appointment requested</li>
@@ -258,4 +308,3 @@ export function Prototype() {
     </main>
   );
 }
-

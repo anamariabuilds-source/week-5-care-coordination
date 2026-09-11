@@ -19,3 +19,12 @@ Tomorrow's first move: define simulated case and facility fixtures plus Zod sche
 - Include an explicitly stale approved fixture without creating a numeric freshness threshold.
 
 Tomorrow's first move: implement and test deterministic workflow guards for provider next step, scoped consent, navigator request authority, confirmation evidence, and terminal refusal/revocation.
+
+## Commit 3 — Core deterministic workflow
+
+- Derive booking status from validated inputs so confirmation cannot remain stale after its evidence is removed.
+- Treat refusal and revocation as terminal honored-choice states that disable all workflow contact actions.
+- Keep support-person permission off by default and independent from scheduling consent.
+- Represent facility denial and unsupported clinical-document transfer as explicit non-confirmed states.
+
+Tomorrow's first move: prepare the first deterministic deployment, then add the bounded server-side Gemini proposal route without changing workflow authority.
