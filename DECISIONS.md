@@ -46,3 +46,11 @@ Tomorrow's first move: configure the server-only Gemini key in Vercel, verify th
 - Keep rendering in React text nodes; no untrusted HTML rendering API is used.
 
 Tomorrow's first move: verify the automatically deployed Commit 5 Gemini happy path and perform the planned high-value browser flows against Deploy 2.
+
+## Temporary production diagnostic
+
+- Log only sanitized Gemini upstream status, error status/message, model name, and JSON-parse outcome; never log notes, headers, credentials, or environment values.
+- Use the stable `gemini-2.5-flash` model, which the official model documentation lists as supporting structured outputs.
+- Remove the temporary diagnostic after the production failure is identified and fixed.
+
+Tomorrow's first move: capture the sanitized Gemini production error, fix only its root cause, then remove the temporary diagnostic logging.
